@@ -23,6 +23,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// PUT api/v1/astronauts/:id
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+    const updateAstronaut = pool.query(`UPDATE astronaut SET name = $1 WHERE id = $2`, [name, id]);
+    if (updateAstronaut) return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
+
 // POST api/v1/astronauts
 router.post('/', async (req, res) => {
   try {
