@@ -28,8 +28,9 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
-    const updateAstronaut = pool.query(`UPDATE astronaut SET name = $1 WHERE id = $2`, [name, id]);
-    if (updateAstronaut) return res.status(200).json({ success: true });
+    const result = await pool.query(`UPDATE astronaut SET name = $1 WHERE id = $2`, [name, id]);
+
+    if (result.rowCount > 0) return res.status(200).json({ success: 'Astronaute mis à jour!' });
   } catch (err) {
     console.error(err.message);
   }
@@ -48,6 +49,15 @@ router.post('/', async (req, res) => {
 });
 
 // DELETE api/v1/astronauts/:id
-router.delete('/:id', (req, res) => {});
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(`DELETE FROM astronaut WHERE id = $1`, [id]);
+
+    if (result.rowCount > 0) return res.json(200).json({ message: 'Astronaute supprimé!' });
+  } catch (err) {
+    console.error(err.message);
+  }
+});
 
 module.exports = router;
