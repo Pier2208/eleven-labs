@@ -52,7 +52,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // PUT api/v1/astronauts/:id
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', uploadSingle(), validate(schemas.astronautSchema), async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, bio, teamId } = req.body;
@@ -101,9 +101,9 @@ router.post('/', uploadSingle(), validate(schemas.astronautSchema), async (req, 
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await pool.query(`DELETE FROM astronaut WHERE id = $1`, [id]);
+    await pool.query(`DELETE FROM astronaut WHERE id = $1`, [id]);
 
-    if (result.rowCount > 0) return res.status(200).json({ message: 'Astronaute supprimé!' });
+    return res.status(200).json({ message: 'Astronaute supprimé!' });
   } catch (err) {
     console.error(err.message);
     next(err);
