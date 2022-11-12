@@ -1,13 +1,24 @@
-import React from 'react'
-import styled from 'styled-components'
+import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import { lazy, Suspense } from 'react'
+import * as ROUTES from "./constants/routes";
 
-const Title = styled.h1`
-  color: hotpink;
-`
+const Home = lazy(() => import('./pages/Home'))
+const AddAstronaut = lazy(() => import('./pages/AddAstronaut'))
+const EditAstronaut = lazy(() => import('./pages/EditAstronaut'))
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => {
   return (
-    <Title>bienvenue React!</Title>
+    <Router>
+    <Suspense fallback={<p>Loading...</p>}>
+      <Routes>
+        <Route path={ROUTES.HOME} element={<Home />} />
+        <Route path={ROUTES.ADD} element={<AddAstronaut />} />
+        <Route path={ROUTES.EDIT} element={<EditAstronaut />} />
+        <Route component={NotFound} />
+      </Routes>
+    </Suspense>
+  </Router>
   )
 }
 
