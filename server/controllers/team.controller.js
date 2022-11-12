@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
 
     if (newTeam) return res.status(200).json(newTeam.rows[0]);
   } catch (err) {
-    console.err(err.message);
+    console.error(err.message);
   }
 });
 
