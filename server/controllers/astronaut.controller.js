@@ -60,7 +60,7 @@ router.put('/:id', uploadSingle(), validate(schemas.astronautSchema), async (req
 
     const result = await pool.query(`UPDATE astronaut SET name = $1, bio = $2, teamId = $3 WHERE id = $4`, [name, bio, teamId, id]);
 
-    if (result.rowCount > 0) return res.status(200).json({ success: 'Astronaute mis à jour!' });
+    if (result.rowCount > 0) return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
   } catch (err) {
     console.error(err.message);
     next(err);
@@ -87,7 +87,7 @@ router.post('/', uploadSingle(), validate(schemas.astronautSchema), async (req, 
         [name, bio, teamId, imagePublicId]
       );
 
-      if (newAstronaut) return res.status(200).json({ message: 'Astronaute ajouté!' });
+      if (newAstronaut) return res.status(200).json({ message: 'Astronaute ajouté!', success: true });
     });
 
     const stream = Readable.from(req.file.buffer);
@@ -104,7 +104,7 @@ router.delete('/:id', async (req, res, next) => {
     const { id } = req.params;
     await pool.query(`DELETE FROM astronaut WHERE id = $1`, [id]);
 
-    return res.status(200).json({ message: 'Astronaute supprimé!' });
+    return res.status(200).json({ message: 'Astronaute supprimé!', success: true });
   } catch (err) {
     console.error(err.message);
     next(err);
