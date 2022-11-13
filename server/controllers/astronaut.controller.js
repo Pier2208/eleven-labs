@@ -24,7 +24,8 @@ router.get('/', async (req, res, next) => {
     SELECT a.id as id, a.name as name, a.bio as bio, t.name as team, i.url as avatar
     FROM astronaut as a 
     JOIN team as t ON a.team_id = t.id
-    JOIN image as i ON a.image_public_id = i.public_id`);
+    JOIN image as i ON a.image_public_id = i.public_id
+    ORDER BY id DESC`);
 
     return res.status(200).json(allAstronauts);
   } catch (err) {
@@ -39,9 +40,10 @@ router.get('/:id', async (req, res, next) => {
     const { id } = req.params;
     const astronaut = await pool.query(
       `
-    SELECT a.id as id, a.name as name, a.bio as bio, t.name as team 
+    SELECT a.name as name, a.bio as bio, t.id as teamId, i.url as avatar
     FROM astronaut as a 
-    JOIN team as t ON a.team_id = t.id 
+    JOIN team as t ON a.team_id = t.id
+    JOIN image as i ON a.image_public_id = i.public_id
     WHERE a.id = $1`,
       [id]
     );
@@ -58,9 +60,9 @@ router.put('/:id', uploadSingle(), validate(schemas.astronautSchema), async (req
     const { id } = req.params;
     const { name, bio, teamId } = req.body;
 
-    const result = await pool.query(`UPDATE astronaut SET name = $1, bio = $2, teamId = $3 WHERE id = $4`, [name, bio, teamId, id]);
+    await pool.query(`UPDATE astronaut SET name = $1, bio = $2, team_id = $3 WHERE id = $4`, [name, bio, teamId, id]);
 
-    if (result.rowCount > 0) return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
+    return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
   } catch (err) {
     console.error(err.message);
     next(err);
