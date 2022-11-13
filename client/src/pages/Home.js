@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { useAstronaut } from '../context/astronaut';
+import EditButton from '../assets/editButton.svg';
+import * as ROUTES from '../constants/routes'
 
 const Home = () => {
   const [astronauts, setAstronauts] = useState();
@@ -22,6 +25,9 @@ const Home = () => {
               <small>Team: {astronaut.team}</small>
               <Bio>{astronaut.bio}</Bio>
             </Content>
+            <Link to={`${ROUTES.EDIT}${astronaut.id}`}>
+              <EditIcon src={EditButton} alt='Éditer un astronaute' />
+            </Link>
           </Article>
         ))}
       </Grid>
@@ -44,12 +50,28 @@ const Grid = styled.section`
   padding: 3rem 1rem;
 `;
 
+const EditIcon = styled.img`
+  width: 28px;
+  height: 28px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 250ms;
+`;
+
 const Article = styled.article`
   width: 100%;
   display: flex;
   gap: 1rem;
   box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
   padding: var(--spacing-s);
+  position: relative;
+
+  &:hover ${EditIcon} {
+    opacity: 1;
+  }
 `;
 
 const Img = styled.img`

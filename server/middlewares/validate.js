@@ -13,13 +13,15 @@ const teamId = Joi.number().required().messages({
   'string.empty': "Vous devez faire partie d'une équipe",
   'any.required': "Vous devez faire partie d'une équipe"
 });
+const image = Joi.allow('');
 
 module.exports = {
   schemas: {
     astronautSchema: Joi.object().keys({
       name,
       bio,
-      teamId
+      teamId,
+      image
     })
   },
   validate: schema => (req, res, next) => {
