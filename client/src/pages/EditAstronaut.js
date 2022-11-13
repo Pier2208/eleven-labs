@@ -2,7 +2,7 @@ import React from 'react'
 
 const EditAstronaut = () => {
   return (
-    <div>EditAstronaut</div>
+    <h1>Editer un astronaute</h1>
   )
 }
 
