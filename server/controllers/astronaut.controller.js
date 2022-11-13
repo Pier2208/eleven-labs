@@ -21,11 +21,12 @@ const { uploadSingle } = require('../middlewares/uploadFile')
 router.get('/', async (req, res, next) => {
   try {
     const { rows: allAstronauts } = await pool.query(`
-    SELECT a.id as id, a.name as name, a.bio as bio, t.name as team 
+    SELECT a.id as id, a.name as name, a.bio as bio, t.name as team, i.url as avatar
     FROM astronaut as a 
-    JOIN team as t ON a.team_id = t.id`);
+    JOIN team as t ON a.team_id = t.id
+    JOIN image as i ON a.image_public_id = i.public_id`);
 
-    if (allAstronauts.length) return res.status(200).json(allAstronauts);
+    return res.status(200).json(allAstronauts);
   } catch (err) {
     console.error(err.message);
     next(err);
