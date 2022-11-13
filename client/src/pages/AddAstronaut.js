@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAstronaut } from '../context/astronaut';
+import { useTeam } from '../context/team';
 import styled from 'styled-components';
 import * as ROUTES from '../constants/routes';
 
@@ -24,16 +25,15 @@ const AddAstronaut = () => {
     }
   };
   const { addAstronaut } = useAstronaut();
-  const navigate = useNavigate();
+  const { getAllTeams } = useTeam();
   const [teams, setTeams] = useState();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [preview, setPreview] = useState();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/teams')
-      .then(res => res.json())
-      .then(teams => setTeams(teams));
-  }, []);
+    getAllTeams().then(teams => setTeams(teams));
+  }, [getAllTeams]);
 
   const updateFieldValue = field => {
     return e => {
@@ -57,13 +57,14 @@ const AddAstronaut = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     let formData = new FormData();
-    formData.append('name', state.name);
-    formData.append('bio', state.bio);
-    formData.append('teamId', state.teamId);
-    formData.append('image', state.image);
+
+    for(let i in state){
+      formData.append(i, state[i])
+    }
 
     addAstronaut(formData).then(res => {
-      if (res) navigate(ROUTES.HOME);
+      console.log('RES', res)
+      if (res.success) navigate(ROUTES.HOME);
     });
   };
 
