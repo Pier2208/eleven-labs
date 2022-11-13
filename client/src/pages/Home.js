@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useAstronaut } from '../context/astronaut';
 
 const Home = () => {
   const [astronauts, setAstronauts] = useState();
+  const { getAllAstronauts } = useAstronaut();
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/astronauts')
-      .then(res => res.json())
-      .then(astronauts => setAstronauts(astronauts));
-  }, []);
+    getAllAstronauts().then(astronauts => setAstronauts(astronauts));
+  }, [getAllAstronauts]);
 
   return (
     <Section>
@@ -74,10 +74,10 @@ const Content = styled.div`
 
 const Bio = styled.div`
   background-color: black;
-  color: #83F52C;
+  color: #83f52c;
   width: 100%;
   height: 100%;
   border-radius: 5px;
   font-size: 0.6rem;
   padding: 5px;
-`
+`;

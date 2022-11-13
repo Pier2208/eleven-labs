@@ -9,12 +9,14 @@ const Navbar = () => {
 
   return (
     <Header>
-      <Link to={ROUTES.HOME}>Eleven-Labs</Link>
-      {pathname !== ROUTES.ADD && (
-        <Link to={ROUTES.ADD}>
-          <img src={AddButton} alt='Add a new astronaut' />
-        </Link>
-      )}
+      <Container>
+        <Link to={ROUTES.HOME}>Eleven-Labs</Link>
+        {pathname !== ROUTES.ADD && (
+          <Link to={ROUTES.ADD}>
+            <img src={AddButton} alt='Add a new astronaut' />
+          </Link>
+        )}
+      </Container>
     </Header>
   );
 };
@@ -24,8 +26,13 @@ export default Navbar;
 const Header = styled.header`
   background: var(--color-primary);
   color: var(--white);
+  padding: var(--spacing-s) var(--spacing-m);
+`;
+
+const Container = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-s) var(--spacing-m);
+  max-width: var(--max-width);
+  margin: 0 auto;
 `;
