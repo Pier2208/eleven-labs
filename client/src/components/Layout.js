@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import GlobalStyle from '../styles/global';
 import Navbar from './Navbar';
+import PropTypes from 'prop-types';
 
 const Layout = ({ children }) => {
   return (
@@ -14,6 +15,11 @@ const Layout = ({ children }) => {
 };
 
 export default Layout;
+
+Layout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 
 // styles
 const Main = styled.main`
