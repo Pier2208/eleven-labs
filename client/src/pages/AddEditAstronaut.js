@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useReducer } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAstronaut } from '../context/astronaut';
 import { useTeam } from '../context/team';
 import styled from 'styled-components';
 import * as ROUTES from '../constants/routes';
+import { Loader } from '../components/Loader';
 
 const AddAstronaut = () => {
   const INITIAL_STATE = {
@@ -20,21 +21,56 @@ const AddAstronaut = () => {
           ...state,
           [action.field]: action.value
         };
+      case 'resetField':
+        return INITIAL_STATE;
       default:
         return INITIAL_STATE;
     }
   };
-  const { addAstronaut } = useAstronaut();
+  const { addAstronaut, getAstronautById, editAstronaut } = useAstronaut();
   const { getAllTeams } = useTeam();
   const [teams, setTeams] = useState();
+  const [loading, setLoading] = useState(false);
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [preview, setPreview] = useState();
   const navigate = useNavigate();
+  const [editing, setEditing] = useState(false);
+  const location = useLocation();
+  let { id: astronautId } = useParams();
 
+  // fetch all teams
   useEffect(() => {
     getAllTeams().then(teams => setTeams(teams));
   }, [getAllTeams]);
 
+  // set edit or add mode
+  useEffect(() => {
+    if (location.pathname.includes('edit')) {
+      setEditing(true);
+      getAstronautById(astronautId).then(astronaut => {
+        let editAstronaut = (({ name, bio, teamid: teamId }) => ({ name, bio, teamId }))(astronaut);
+        for (let field in editAstronaut) {
+          dispatch({
+            type: 'updateFieldValue',
+            field,
+            value: editAstronaut[field]
+          });
+        }
+        setPreview(astronaut.avatar);
+      });
+    } else {
+      setEditing(false);
+      for (let field in state) {
+        dispatch({
+          type: 'resetField',
+          field
+        });
+      }
+      setPreview();
+    }
+  }, [location]);
+
+  // handle input change
   const updateFieldValue = field => {
     return e => {
       if (e.target.files && e.target.files.length > 0) {
@@ -54,23 +90,33 @@ const AddAstronaut = () => {
     };
   };
 
+  // handle form submit
   const handleSubmit = async e => {
+    setLoading(true);
     e.preventDefault();
     let formData = new FormData();
 
-    for(let i in state){
-      formData.append(i, state[i])
+    for (let i in state) {
+      formData.append(i, state[i]);
     }
 
-    addAstronaut(formData).then(res => {
-      console.log('RES', res)
-      if (res.success) navigate(ROUTES.HOME);
-    });
+    if (editing) {
+      editAstronaut(astronautId, formData).then(res => {
+        if (res.success) navigate(ROUTES.HOME);
+        setLoading(false);
+      });
+    } else {
+      addAstronaut(formData).then(res => {
+        if (res.success) navigate(ROUTES.HOME);
+        setLoading(false);
+      });
+    }
   };
 
   return (
-    <>
-      <h1>Ajouter un astronaute</h1>
+    <Section>
+      {loading && <Loader />}
+      <h1>{editing ? 'Editer' : 'Ajouter'} un astronaute</h1>
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <label>Nom</label>
@@ -84,7 +130,7 @@ const AddAstronaut = () => {
 
         <FormGroup>
           <label>Sélectionner une équipe</label>
-          <select name='teamId' onChange={updateFieldValue('teamId')}>
+          <select name='teamId' onChange={updateFieldValue('teamId')} value={state.teamId}>
             {teams?.map(team => (
               <option key={team.id} value={team.id}>
                 {team.name}
@@ -98,11 +144,11 @@ const AddAstronaut = () => {
           <input type='file' accept='image/*' name='image' onChange={updateFieldValue('image')} />
         </FormGroup>
 
-        {preview && <Preview src={URL.createObjectURL(preview)} alt='Thumb' />}
+        {preview instanceof File ? <Preview src={URL.createObjectURL(preview)} alt='Thumb' /> : <Preview src={preview} />}
 
-        <Button>Ajouter</Button>
+        <Button>{editing ? 'Editer' : 'Ajouter'}</Button>
       </Form>
-    </>
+    </Section>
   );
 };
 
@@ -113,6 +159,12 @@ const Preview = styled.img`
   max-width: 100%;
   max-height: 150px;
   margin-bottom: var(--spacing-m);
+`;
+
+const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const Form = styled.form`
