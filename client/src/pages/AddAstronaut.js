@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAstronaut } from '../context/astronaut';
 import styled from 'styled-components';
 import * as ROUTES from '../constants/routes';
 
@@ -22,6 +23,7 @@ const AddAstronaut = () => {
         return INITIAL_STATE;
     }
   };
+  const { addAstronaut } = useAstronaut();
   const navigate = useNavigate();
   const [teams, setTeams] = useState();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -32,12 +34,6 @@ const AddAstronaut = () => {
       .then(res => res.json())
       .then(teams => setTeams(teams));
   }, []);
-
-  // const imageChange = e => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     setPreview(e.target.files[0]);
-  //   }
-  // };
 
   const updateFieldValue = field => {
     return e => {
@@ -66,11 +62,8 @@ const AddAstronaut = () => {
     formData.append('teamId', state.teamId);
     formData.append('image', state.image);
 
-    const res = await fetch('http://localhost:8080/api/v1/astronauts', {
-      method: 'POST',
-      body: formData
-    }).then(res => {
-      navigate(ROUTES.HOME);
+    addAstronaut(formData).then(res => {
+      if (res) navigate(ROUTES.HOME);
     });
   };
 
