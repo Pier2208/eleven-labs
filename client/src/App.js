@@ -6,8 +6,7 @@ import { AstronautProvider } from './context/astronaut';
 import { TeamProvider } from './context/team';
 
 const Home = lazy(() => import('./pages/Home'));
-const AddAstronaut = lazy(() => import('./pages/AddAstronaut'));
-const EditAstronaut = lazy(() => import('./pages/EditAstronaut'));
+const AddEditAstronaut = lazy(() => import('./pages/AddEditAstronaut'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const App = () => {
@@ -19,8 +18,8 @@ const App = () => {
             <Suspense fallback={<p>Loading...</p>}>
               <Routes>
                 <Route path={ROUTES.HOME} element={<Home />} />
-                <Route path={ROUTES.ADD} element={<AddAstronaut />} />
-                <Route path={ROUTES.EDIT} element={<EditAstronaut />} />
+                <Route path={ROUTES.ADD} element={<AddEditAstronaut />} />
+                <Route path={`${ROUTES.EDIT}:id`} element={<AddEditAstronaut />} />
                 <Route component={NotFound} />
               </Routes>
             </Suspense>
