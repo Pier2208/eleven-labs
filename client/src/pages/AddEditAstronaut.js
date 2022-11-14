@@ -5,6 +5,7 @@ import { useTeam } from '../context/team';
 import styled from 'styled-components';
 import * as ROUTES from '../constants/routes';
 import { Loader } from '../components/Loader';
+import { Error } from '../components/Error';
 
 const AddAstronaut = () => {
   const INITIAL_STATE = {
@@ -33,6 +34,7 @@ const AddAstronaut = () => {
   const [loading, setLoading] = useState(false);
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [preview, setPreview] = useState();
+  const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const location = useLocation();
@@ -102,12 +104,24 @@ const AddAstronaut = () => {
 
     if (editing) {
       editAstronaut(astronautId, formData).then(res => {
+        if (res.err) {
+          setFormErrors(res.err);
+          setLoading(false);
+          return;
+        }
         if (res.success) navigate(ROUTES.HOME);
+        setFormErrors({});
         setLoading(false);
       });
     } else {
       addAstronaut(formData).then(res => {
+        if (res.err) {
+          setFormErrors(res.err);
+          setLoading(false);
+          return;
+        }
         if (res.success) navigate(ROUTES.HOME);
+        setFormErrors({});
         setLoading(false);
       });
     }
@@ -121,6 +135,7 @@ const AddAstronaut = () => {
         <FormGroup>
           <label>Nom</label>
           <input type='text' name='name' value={state.name} onChange={updateFieldValue('name')} />
+          <Error>{formErrors?.name}</Error>
         </FormGroup>
 
         <FormGroup>
@@ -198,4 +213,9 @@ const Button = styled.button`
   border: none;
   outline: none;
   border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-primary);
+  }
 `;
