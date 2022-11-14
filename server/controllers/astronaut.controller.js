@@ -5,17 +5,17 @@ const { Readable } = require('stream');
 
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true
-  });
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true
+});
 
 // middlewares
 const joi = require('../middlewares/validate');
 const { validate, schemas } = joi;
-const { uploadSingle } = require('../middlewares/uploadFile')
-
+const { uploadSingle } = require('../middlewares/uploadFile');
+const { read } = require('fs');
 
 // GET api/v1/astronauts
 router.get('/', async (req, res, next) => {
@@ -60,9 +60,26 @@ router.put('/:id', uploadSingle(), validate(schemas.astronautSchema), async (req
     const { id } = req.params;
     const { name, bio, teamId } = req.body;
 
-    await pool.query(`UPDATE astronaut SET name = $1, bio = $2, team_id = $3 WHERE id = $4`, [name, bio, teamId, id]);
+    if (req.file) {
+      // image upload
+      const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async function (err, image) {
+        if (err) {
+          throw err;
+        }
 
-    return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
+        const result = await pool.query(`INSERT INTO image(public_id, url) VALUES($1, $2) RETURNING public_id`, [image.public_id, image.url]);
+        const imagePublicId = result.rows[0].public_id;
+
+        await pool.query(`UPDATE astronaut SET name = $1, bio = $2, team_id = $3, image_public_id = $4 WHERE id = $5`, [name, bio, teamId, imagePublicId, id]);
+
+        return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
+      });
+      const stream = Readable.from(req.file.buffer);
+      stream.pipe(upload_stream);
+    } else {
+      await pool.query(`UPDATE astronaut SET name = $1, bio = $2, team_id = $3 WHERE id = $4`, [name, bio, teamId, id]);
+      return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
+    }
   } catch (err) {
     console.error(err.message);
     next(err);
@@ -75,25 +92,37 @@ router.post('/', uploadSingle(), validate(schemas.astronautSchema), async (req, 
     const { name, bio, teamId } = req.body;
 
     // image upload
-    const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async function (err, image) {
-      if (err) {
-        throw err
-      }
+    if (req.file) {
+      const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async function (err, image) {
+        if (err) {
+          throw err;
+        }
 
-      const result = await pool.query(`INSERT INTO image(public_id, url) VALUES($1, $2) RETURNING public_id`, [image.public_id, image.url]);
-      const imagePublicId = result.rows[0].public_id;
+        const result = await pool.query(`INSERT INTO image(public_id, url) VALUES($1, $2) RETURNING public_id`, [image.public_id, image.url]);
+        const imagePublicId = result.rows[0].public_id;
 
-      const newAstronaut = await pool.query(`
+        await pool.query(
+          `
+          INSERT INTO astronaut (name, bio, team_id, image_public_id) 
+          VALUES($1, $2, $3, $4) RETURNING *`,
+          [name, bio, teamId, imagePublicId]
+        );
+
+        return res.status(200).json({ message: 'Astronaute ajouté!', success: true });
+      });
+
+      const stream = Readable.from(req.file.buffer);
+      stream.pipe(upload_stream);
+    } else {
+      await pool.query(
+        `
         INSERT INTO astronaut (name, bio, team_id, image_public_id) 
         VALUES($1, $2, $3, $4) RETURNING *`,
-        [name, bio, teamId, imagePublicId]
+        [name, bio, teamId, 'elevenlabs/defaultuser']
       );
 
-      if (newAstronaut) return res.status(200).json({ message: 'Astronaute ajouté!', success: true });
-    });
-
-    const stream = Readable.from(req.file.buffer);
-    stream.pipe(upload_stream);
+      return res.status(200).json({ message: 'Astronaute ajouté!', success: true });
+    }
   } catch (err) {
     console.error(err.message);
     next(err);
