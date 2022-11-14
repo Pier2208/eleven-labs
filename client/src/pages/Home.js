@@ -3,19 +3,21 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useAstronaut } from '../context/astronaut';
 import EditButton from '../assets/editButton.svg';
-import * as ROUTES from '../constants/routes'
+import DeleteButton from '../assets/deleteButton.svg';
+import * as ROUTES from '../constants/routes';
 
 const Home = () => {
   const [astronauts, setAstronauts] = useState();
-  const { getAllAstronauts } = useAstronaut();
+  const { getAllAstronauts, deleteAstronaut } = useAstronaut();
 
   useEffect(() => {
     getAllAstronauts().then(astronauts => setAstronauts(astronauts));
-  }, [getAllAstronauts]);
+  }, [getAllAstronauts, astronauts]);
 
   return (
     <Section>
       <h1>Les astronautes</h1>
+      {!astronauts?.length && <p>Il n'y a aucun astronaute pour le moment.</p>}
       <Grid>
         {astronauts?.map((astronaut, i) => (
           <Article key={i}>
@@ -25,9 +27,12 @@ const Home = () => {
               <small>Team: {astronaut.team}</small>
               <Bio>{astronaut.bio}</Bio>
             </Content>
-            <Link to={`${ROUTES.EDIT}${astronaut.id}`}>
-              <EditIcon src={EditButton} alt='Éditer un astronaute' />
-            </Link>
+            <ActionButtons>
+              <Link to={`${ROUTES.EDIT}${astronaut.id}`}>
+                <EditIcon src={EditButton} alt='Éditer un astronaute' />
+              </Link>
+              <DeleteIcon onClick={() => deleteAstronaut(astronaut.id)} src={DeleteButton} alt='Supprimer un astronaute' />
+            </ActionButtons>
           </Article>
         ))}
       </Grid>
@@ -50,15 +55,26 @@ const Grid = styled.section`
   padding: 3rem 1rem;
 `;
 
+const ActionButtons = styled.div`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  opacity: 0;
+  transition: opacity 250ms;
+  display: flex;
+  & > * {
+    margin-left: 5px;
+  }
+`;
+
 const EditIcon = styled.img`
   width: 28px;
   height: 28px;
-  position: absolute;
-  top: 0;
-  right: 0;
-  opacity: 0;
   cursor: pointer;
-  transition: opacity 250ms;
+`;
+
+const DeleteIcon = styled(EditIcon)`
+  color: var(--color-error);
 `;
 
 const Article = styled.article`
@@ -69,7 +85,7 @@ const Article = styled.article`
   padding: var(--spacing-s);
   position: relative;
 
-  &:hover ${EditIcon} {
+  &:hover ${ActionButtons} {
     opacity: 1;
   }
 `;
@@ -95,8 +111,8 @@ const Content = styled.div`
 `;
 
 const Bio = styled.div`
-  background-color: black;
-  color: #83f52c;
+  background-color: var(--color-black);
+  color: var(--color-secondary);
   width: 100%;
   height: 100%;
   border-radius: 5px;
