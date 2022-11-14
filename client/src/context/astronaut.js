@@ -22,8 +22,8 @@ export const AstronautProvider = ({ children }) => {
     return res.json();
   };
 
-  const editAstronaut = async (id, formData)=> {
-    console.log('formdata', formData)
+  const editAstronaut = async (id, formData) => {
+    console.log('formdata', formData);
     const res = await fetch(`http://localhost:8080/api/v1/astronauts/${id}`, {
       method: 'PUT',
       body: formData
@@ -36,13 +36,21 @@ export const AstronautProvider = ({ children }) => {
     return res.json();
   };
 
+  const deleteAstronaut = async id => {
+    const res = await fetch(`http://localhost:8080/api/v1/astronauts/${id}`, {
+      method: 'DELETE'
+    });
+    return res.json();
+  };
+
   return (
     <AstronautContext.Provider
       value={{
         getAllAstronauts,
         addAstronaut,
         editAstronaut,
-        getAstronautById
+        getAstronautById,
+        deleteAstronaut
       }}
     >
       {children}
