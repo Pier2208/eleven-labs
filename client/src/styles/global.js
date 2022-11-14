@@ -7,17 +7,14 @@ const GlobalStyle = createGlobalStyle`
         font-size: 0.9rem;
         --color-primary: #2188E4;
         --color-primary-darker: #1A6CB6;
-        --color-secondary: #F7AA36;
-        --color-secondary-darker: #DE9930;
-        --color-tertiary: #013D62;
+        --color-secondary: #83f52c;
         --color-error: #cc0000;
         --color-success: #4BB543;
         --color-disabled: #d3d3d3;
         
         --color-grey-light: #F1F1F1;
         --color-white: #FFFFFF;
-        --color-text: #333333;
-        --color-heading: #013D62;
+        --color-black: #000;
         --font: 'Audiowide', cursive;;
         --spacing-s: 0.5rem;
         --spacing-m: 1.5rem;
