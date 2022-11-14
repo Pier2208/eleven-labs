@@ -28,14 +28,11 @@ module.exports = {
     const { error } = schema.validate(req.body, { abortEarly: false });
 
     if (error) {
-      let errors = [];
+      let errors = {};
       error.details.forEach(error => {
-        errors.push({
-          field: error.path[0],
-          error: error.message
-        });
+        errors[error.path[0]] = error.message
       });
-      next(errors);
+      next({ err: errors });
     }
     next();
   }
