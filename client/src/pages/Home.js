@@ -1,43 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { Loader } from '../components/Loader';
 import { useAstronaut } from '../context/astronaut';
 import EditButton from '../assets/editButton.svg';
 import DeleteButton from '../assets/deleteButton.svg';
 import * as ROUTES from '../constants/routes';
 
 const Home = () => {
+  const [loading, setLoading] = useState(true);
   const [astronauts, setAstronauts] = useState();
   const { getAllAstronauts, deleteAstronaut } = useAstronaut();
 
   useEffect(() => {
-    getAllAstronauts().then(astronauts => setAstronauts(astronauts));
+    getAllAstronauts().then(astronauts => {
+      setAstronauts(astronauts);
+      setLoading(false);
+    });
   }, [getAllAstronauts, astronauts]);
 
-  return (
-    <Section>
-      <h1>Les astronautes</h1>
-      {!astronauts?.length && <p>Il n'y a aucun astronaute pour le moment.</p>}
-      <Grid>
-        {astronauts?.map((astronaut, i) => (
-          <Article key={i}>
-            <Img src={astronaut.avatar} alt={astronaut.name} />
-            <Content>
-              <h2>{astronaut.name}</h2>
-              <small>Team: {astronaut.team}</small>
-              <Bio>{astronaut.bio}</Bio>
-            </Content>
-            <ActionButtons>
-              <Link to={`${ROUTES.EDIT}${astronaut.id}`}>
-                <EditIcon src={EditButton} alt='Éditer un astronaute' />
-              </Link>
-              <DeleteIcon onClick={() => deleteAstronaut(astronaut.id)} src={DeleteButton} alt='Supprimer un astronaute' />
-            </ActionButtons>
-          </Article>
-        ))}
-      </Grid>
-    </Section>
-  );
+    return loading ? (
+      <Loader />
+    ) : (
+      <Section>
+        <h1>Les astronautes</h1>
+        {!astronauts?.length && <p>Il n'y a aucun astronaute pour le moment.</p>}
+        <Grid>
+          {astronauts?.map((astronaut, i) => (
+            <Article key={i}>
+              <Img src={astronaut.avatar} alt={astronaut.name} />
+              <Content>
+                <h2>{astronaut.name}</h2>
+                <small>Team: {astronaut.team}</small>
+                <Bio>{astronaut.bio}</Bio>
+              </Content>
+              <ActionButtons>
+                <Link to={`${ROUTES.EDIT}${astronaut.id}`}>
+                  <EditIcon src={EditButton} alt='Éditer un astronaute' />
+                </Link>
+                <DeleteIcon onClick={() => deleteAstronaut(astronaut.id)} src={DeleteButton} alt='Supprimer un astronaute' />
+              </ActionButtons>
+            </Article>
+          ))}
+        </Grid>
+      </Section>
+    );
 };
 
 export default Home;
