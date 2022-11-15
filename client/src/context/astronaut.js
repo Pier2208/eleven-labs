@@ -10,12 +10,12 @@ const AstronautContext = createContext();
  */
 export const AstronautProvider = ({ children }) => {
   const getAllAstronauts = async () => {
-    const res = await fetch('http://localhost:8080/api/v1/astronauts');
+    const res = await fetch('/api/v1/astronauts');
     return res.json();
   };
 
   const addAstronaut = async formData => {
-    const res = await fetch('http://localhost:8080/api/v1/astronauts', {
+    const res = await fetch('/api/v1/astronauts', {
       method: 'POST',
       body: formData
     });
@@ -24,7 +24,7 @@ export const AstronautProvider = ({ children }) => {
 
   const editAstronaut = async (id, formData) => {
     console.log('formdata', formData);
-    const res = await fetch(`http://localhost:8080/api/v1/astronauts/${id}`, {
+    const res = await fetch(`/api/v1/astronauts/${id}`, {
       method: 'PUT',
       body: formData
     });
@@ -32,12 +32,12 @@ export const AstronautProvider = ({ children }) => {
   };
 
   const getAstronautById = async id => {
-    const res = await fetch(`http://localhost:8080/api/v1/astronauts/${id}`);
+    const res = await fetch(`/api/v1/astronauts/${id}`);
     return res.json();
   };
 
   const deleteAstronaut = async id => {
-    const res = await fetch(`http://localhost:8080/api/v1/astronauts/${id}`, {
+    const res = await fetch(`/api/v1/astronauts/${id}`, {
       method: 'DELETE'
     });
     return res.json();

@@ -2,37 +2,19 @@ import React, { useEffect, useState, useReducer } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAstronaut } from '../context/astronaut';
 import { useTeam } from '../context/team';
+import { ASTRONAUT_INITIAL_STATE, astronautReducer } from '../reducers/astronautReducer';
 import styled from 'styled-components';
 import * as ROUTES from '../constants/routes';
 import { Loader } from '../components/Loader';
 import { Error } from '../components/Error';
 
 const AddAstronaut = () => {
-  const INITIAL_STATE = {
-    name: '',
-    bio: '',
-    teamId: '1',
-    image: ''
-  };
 
-  const reducer = (state, action) => {
-    switch (action.type) {
-      case 'updateFieldValue':
-        return {
-          ...state,
-          [action.field]: action.value
-        };
-      case 'resetField':
-        return INITIAL_STATE;
-      default:
-        return INITIAL_STATE;
-    }
-  };
   const { addAstronaut, getAstronautById, editAstronaut } = useAstronaut();
   const { getAllTeams } = useTeam();
   const [teams, setTeams] = useState();
   const [loading, setLoading] = useState(false);
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [state, dispatch] = useReducer(astronautReducer, ASTRONAUT_INITIAL_STATE);
   const [preview, setPreview] = useState();
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();

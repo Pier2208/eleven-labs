@@ -10,7 +10,7 @@ const TeamContext = createContext();
  */
 export const TeamProvider = ({ children }) => {
   const getAllTeams = async () => {
-    const res = await fetch('http://localhost:8080/api/v1/teams')
+    const res = await fetch('/api/v1/teams')
     return res.json()
   };
 
