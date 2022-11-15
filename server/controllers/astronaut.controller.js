@@ -21,10 +21,9 @@ const { read } = require('fs');
 router.get('/', async (req, res, next) => {
   try {
     const { rows: allAstronauts } = await pool.query(`
-    SELECT a.id as id, a.name as name, a.bio as bio, t.name as team, i.url as avatar
+    SELECT a.id as id, a.name as name, a.bio as bio, t.name as team, a.image_url as avatar
     FROM astronaut as a 
     JOIN team as t ON a.team_id = t.id
-    JOIN image as i ON a.image_public_id = i.public_id
     ORDER BY id DESC`);
 
     return res.status(200).json(allAstronauts);
@@ -40,10 +39,9 @@ router.get('/:id', async (req, res, next) => {
     const { id } = req.params;
     const astronaut = await pool.query(
       `
-    SELECT a.name as name, a.bio as bio, t.id as teamId, i.url as avatar
+    SELECT a.name as name, a.bio as bio, t.id as teamId, a.image_url as avatar
     FROM astronaut as a 
     JOIN team as t ON a.team_id = t.id
-    JOIN image as i ON a.image_public_id = i.public_id
     WHERE a.id = $1`,
       [id]
     );
@@ -62,16 +60,12 @@ router.put('/:id', uploadSingle(), validate(schemas.astronautSchema), async (req
 
     if (req.file) {
       // image upload
-      const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async function (err, image) {
+      const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async (err, image) => {
         if (err) {
           throw err;
         }
 
-        const result = await pool.query(`INSERT INTO image(public_id, url) VALUES($1, $2) RETURNING public_id`, [image.public_id, image.url]);
-        const imagePublicId = result.rows[0].public_id;
-
-        await pool.query(`UPDATE astronaut SET name = $1, bio = $2, team_id = $3, image_public_id = $4 WHERE id = $5`, [name, bio, teamId, imagePublicId, id]);
-
+        await pool.query(`UPDATE astronaut SET name = $1, bio = $2, team_id = $3, image_public_id = $4, image_url = $5 WHERE id = $6`, [name, bio, teamId, image.public_id, image.url, id]);
         return res.status(200).json({ message: 'Astronaute mis à jour!', success: true });
       });
       const stream = Readable.from(req.file.buffer);
@@ -93,21 +87,15 @@ router.post('/', uploadSingle(), validate(schemas.astronautSchema), async (req, 
 
     // image upload
     if (req.file) {
-      const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async function (err, image) {
-        if (err) {
-          throw err;
-        }
-
-        const result = await pool.query(`INSERT INTO image(public_id, url) VALUES($1, $2) RETURNING public_id`, [image.public_id, image.url]);
-        const imagePublicId = result.rows[0].public_id;
+      const upload_stream = cloudinary.uploader.upload_stream({ folder: 'elevenlabs' }, async (err, image) => {
+        if (err) throw err;
 
         await pool.query(
           `
-          INSERT INTO astronaut (name, bio, team_id, image_public_id) 
-          VALUES($1, $2, $3, $4) RETURNING *`,
-          [name, bio, teamId, imagePublicId]
+          INSERT INTO astronaut (name, bio, team_id, image_public_id, image_url) 
+          VALUES($1, $2, $3, $4, $5)`,
+          [name, bio, teamId, image.public_id, image.url]
         );
-
         return res.status(200).json({ message: 'Astronaute ajouté!', success: true });
       });
 
@@ -116,11 +104,10 @@ router.post('/', uploadSingle(), validate(schemas.astronautSchema), async (req, 
     } else {
       await pool.query(
         `
-        INSERT INTO astronaut (name, bio, team_id, image_public_id) 
-        VALUES($1, $2, $3, $4) RETURNING *`,
-        [name, bio, teamId, 'elevenlabs/defaultuser']
+        INSERT INTO astronaut (name, bio, team_id, image_public_id, image_url) 
+        VALUES($1, $2, $3, $4, $5)`,
+        [name, bio, teamId, 'elevenlabs/defaultuser', 'https://res.cloudinary.com/dwhnxncff/image/upload/v1668384222/elevenlabs/defaultuser.jpg']
       );
-
       return res.status(200).json({ message: 'Astronaute ajouté!', success: true });
     }
   } catch (err) {
@@ -134,7 +121,6 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
     await pool.query(`DELETE FROM astronaut WHERE id = $1`, [id]);
-
     return res.status(200).json({ message: 'Astronaute supprimé!', success: true });
   } catch (err) {
     console.error(err.message);
